@@ -182,7 +182,7 @@ class Role(db.Model, Translatable):
         secondaryjoin=(
             "and_("
             "Permission.id==role_permission.c.permission_id,"
-            "Permission.enabled==1)"))
+            "Permission.enabled==True)"))
 
     def __unicode__(self):
         return self.name
@@ -246,7 +246,7 @@ class User(db.Model):
         secondaryjoin=(
             "and_("
             "Role.id==user_role.c.role_id,"
-            "Role.enabled==1)"))
+            "Role.enabled==True)"))
 
     def __unicode__(self):
         return self.login

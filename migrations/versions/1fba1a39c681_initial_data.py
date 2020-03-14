@@ -16,7 +16,7 @@ from sqlalchemy.sql import table, column
 
 # revision identifiers, used by Alembic.
 revision = '1fba1a39c681'
-down_revision = '2f93dbc61a5d'
+down_revision = '18d2c3236e50'
 branch_labels = None
 depends_on = None
 
@@ -32,30 +32,30 @@ def _insert_permissions():
 
     columns = [c.name for c in tb.columns]
     data = [
-        (1, 'WORKFLOW_VIEW_ANY', 'WORKFLOW', 1),
-        (2, 'WORKFLOW_EDIT_ANY', 'WORKFLOW', 1),
-        (3, 'WORKFLOW_EXECUTE_ANY', 'WORKFLOW', 1),
-        (4, 'WORKFLOW_VIEW', 'WORKFLOW', 1),
-        (5, 'WORKFLOW_EDIT', 'WORKFLOW', 1),
-        (6, 'WORKFLOW_EXECUTE', 'WORKFLOW', 1),
+        (1, 'WORKFLOW_VIEW_ANY', 'WORKFLOW', True),
+        (2, 'WORKFLOW_EDIT_ANY', 'WORKFLOW', True),
+        (3, 'WORKFLOW_EXECUTE_ANY', 'WORKFLOW', True),
+        (4, 'WORKFLOW_VIEW', 'WORKFLOW', True),
+        (5, 'WORKFLOW_EDIT', 'WORKFLOW', True),
+        (6, 'WORKFLOW_EXECUTE', 'WORKFLOW', True),
 
-        (7, 'DATA_SOURCE_VIEW_ANY', 'DATA_SOURCE', 1),
-        (8, 'DATA_SOURCE_EDIT_ANY', 'DATA_SOURCE', 1),
-        (9, 'DATA_SOURCE_USE_ANY', 'DATA_SOURCE', 1),
-        (10, 'DATA_SOURCE_VIEW', 'DATA_SOURCE', 1),
-        (11, 'DATA_SOURCE_EDIT', 'DATA_SOURCE', 1),
-        (12, 'DATA_SOURCE_USE', 'DATA_SOURCE', 1),
+        (7, 'DATA_SOURCE_VIEW_ANY', 'DATA_SOURCE', True),
+        (8, 'DATA_SOURCE_EDIT_ANY', 'DATA_SOURCE', True),
+        (9, 'DATA_SOURCE_USE_ANY', 'DATA_SOURCE', True),
+        (10, 'DATA_SOURCE_VIEW', 'DATA_SOURCE', True),
+        (11, 'DATA_SOURCE_EDIT', 'DATA_SOURCE', True),
+        (12, 'DATA_SOURCE_USE', 'DATA_SOURCE', True),
 
-        (13, 'DASHBOARD_VIEW_ANY', 'DASHBOARD', 1),
-        (14, 'DASHBOARD_EDIT_ANY', 'DASHBOARD', 1),
-        (15, 'DASHBOARD_VIEW', 'DASHBOARD', 1),
-        (16, 'DASHBOARD_EDIT', 'DASHBOARD', 1),
+        (13, 'DASHBOARD_VIEW_ANY', 'DASHBOARD', True),
+        (14, 'DASHBOARD_EDIT_ANY', 'DASHBOARD', True),
+        (15, 'DASHBOARD_VIEW', 'DASHBOARD', True),
+        (16, 'DASHBOARD_EDIT', 'DASHBOARD', True),
 
-        (100, 'USER_MANAGE', 'USER', 1),
-        (101, 'STORAGE_MANAGE', 'SYSTEM', 1),
-        (102, 'CLUSTER_MANAGE', 'SYSTEM', 1),
+        (100, 'USER_MANAGE', 'USER', True),
+        (101, 'STORAGE_MANAGE', 'SYSTEM', True),
+        (102, 'CLUSTER_MANAGE', 'SYSTEM', True),
 
-        (1000, 'ADMINISTRATOR', 'SYSTEM', 1),
+        (1000, 'ADMINISTRATOR', 'SYSTEM', True),
 
     ]
     rows = [dict(list(zip(columns, row))) for row in data]
@@ -125,8 +125,8 @@ def _insert_permission_translations():
 def _insert_admin():
     tb = table(
         'user',
-        column('id', Integer),
         column('email', String),
+        column('login', String),
         column('encrypted_password', String),
         column('created_at', DateTime),
         column('first_name', String),
@@ -139,8 +139,8 @@ def _insert_admin():
     hashed = bcrypt.hashpw('admin'.encode('utf8'),
                            bcrypt.gensalt(12))
     data = [
-        (1, 'admin@lemonade.org.br', hashed, datetime.datetime.now(),
-         'Admin', '', 'pt', 1),
+        ('admin@lemonade.org.br', 'admin@lemonade.org.br', hashed, datetime.datetime.now(),
+         'Admin', '', 'pt', True),
     ]
     rows = [dict(list(zip(columns, row))) for row in data]
     op.bulk_insert(tb, rows)
@@ -156,8 +156,8 @@ def _insert_roles():
     )
     columns = [c.name for c in tb.columns]
     data = [
-        (1, 'admin', 0, 1),
-        (100, 'public', 1, 1),
+        (1, 'admin', False, True),
+        (100, 'public', True, True),
     ]
     rows = [dict(list(zip(columns, row))) for row in data]
     op.bulk_insert(tb, rows)
@@ -219,9 +219,9 @@ def _insert_configuration():
     )
     columns = [c.name for c in tb.columns]
     data = [
-        (1, 'LDAP_SERVER', 'ldap.domain.com', 1),
-        (2, 'LDAP_BASE_DN', 'dc=domain,dc=com', 1),
-        (3, 'LDAP_USER_DN', 'uid={login},ou=People,dc=domain,dc=com', 1),
+        (1, 'LDAP_SERVER', 'ldap.domain.com', True),
+        (2, 'LDAP_BASE_DN', 'dc=domain,dc=com', True),
+        (3, 'LDAP_USER_DN', 'uid={login},ou=People,dc=domain,dc=com', True),
     ]
     rows = [dict(list(zip(columns, row))) for row in data]
     op.bulk_insert(tb, rows)
@@ -234,7 +234,7 @@ all_commands = [
      'DELETE FROM permission_translation WHERE id BETWEEN 1 AND 16 OR '
      'id BETWEEN 100 AND 102 OR id BETWEEN 1000 AND 1000'),
 
-    (_insert_admin, 'DELETE FROM user WHERE id BETWEEN 1 AND 1 '),
+    (_insert_admin, 'DELETE FROM public.user WHERE id BETWEEN 1 AND 1 '),
     (_insert_roles, 'DELETE FROM role WHERE id BETWEEN 1 AND 1 OR id '
                     'BETWEEN 100 AND 100'),
     (_insert_role_translations,

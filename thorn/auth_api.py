@@ -33,16 +33,17 @@ def _success(user):
          'token': _get_jwt_token(user)}), 200,
          mimetype="application/json")
 
-def _create_ldap_user():
+def _create_ldap_user(ldap_user, login):
     first_name, last_name = ldap_user.get(
             'displayName')[0].decode('utf8').split(' ', 1)
-    user = User(login=login, email=ldap_user.get('mail', [''])[0],
+    user = User(login=login, email=ldap_user.get('mail', [''])[0].decode('utf8'),
             notes=gettext('LDAP User'), first_name=first_name,
             last_name=last_name.strip(), 
             authentication_type=AuthenticationType.LDAP,
-            encrypted_password=encrypt_password('dummy'))
+            encrypted_password=encrypt_password('dummy').decode('utf8'))
     db.session.add(user)
     db.session.commit()
+    return user
 
 class AuthenticationApi(Resource):
     """"""
@@ -72,7 +73,7 @@ class AuthenticationApi(Resource):
                                 mimetype="application/json")
             else:
                 ldap_user = ldap_authentication(login, password)[0][1]
-                _create_ldap_user(ldap_user)
+                user = _create_ldap_user(ldap_user, login)
                 result = Response(json.dumps({'status': 'OR', 
                     'token': _get_jwt_token(user)}), 200,
                     mimetype="application/json")
